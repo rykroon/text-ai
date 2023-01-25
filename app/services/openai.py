@@ -19,13 +19,31 @@ class Gpt3Model(StrEnum):
     ADA = 'text-ada-001'
 
 
-async def create_completion(model: Gpt3Model, prompt: str, max_tokens: int = 16):
+class ImageSize(StrEnum):
+    SMALL = '256x256'
+    MEDIUM = '512x512'
+    LARGE = '1024x1024' 
+
+
+async def create_completion(model: Gpt3Model, prompt: str, max_tokens: int = 16) -> dict:
     resp = await client.post(
         url="/v1/completions",
         json={
             'model': model,
             'prompt': prompt,
             'max_tokens': max_tokens
+        }
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+
+async def create_image(prompt: str, size: ImageSize):
+    resp = await client.post(
+        url="/v1/images/generations",
+        json={
+            'prompt': prompt,
+            'size': size
         }
     )
     resp.raise_for_status()
