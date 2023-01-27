@@ -8,7 +8,8 @@ API_KEY = os.environ['OPENAI_API_KEY']
 
 client = httpx.AsyncClient(
     base_url="https://api.openai.com",
-    headers={'Authorization': f"Bearer {API_KEY}"}
+    headers={'Authorization': f"Bearer {API_KEY}"},
+    http2=True
 )
 
 

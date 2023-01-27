@@ -7,7 +7,8 @@ TELNYX_API_KEY = os.environ['TELNYX_API_KEY']
 
 client = httpx.AsyncClient(
     base_url='https://api.telnyx.com/',
-    headers={'Authorization': f"Bearer {TELNYX_API_KEY}"}
+    headers={'Authorization': f"Bearer {TELNYX_API_KEY}"},
+    http2=True
 )
 
 

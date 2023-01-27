@@ -30,7 +30,7 @@ class ReloaderThread(threading.Thread):
 
 class RestartableUvicornWorker(UvicornWorker):
 
-    # CONFIG_KWARGS = {"loop": "uvloop", "http": "httptools"}
+    CONFIG_KWARGS = {"loop": "uvloop", "http": "httptools"}
 
     def __init__(self, *args: List[Any], **kwargs: Dict[str, Any]):
         super().__init__(*args, **kwargs)

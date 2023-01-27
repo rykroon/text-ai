@@ -7,7 +7,7 @@ import os
     https://docs.gunicorn.org/en/stable/settings.html
 """
 
-DEBUG = False
+DEBUG = True
 
 bind            = os.getenv('GUNICORN_BIND', '0.0.0.0')
 loglevel        = 'debug' if DEBUG else 'info'
