@@ -7,10 +7,11 @@ import os
     https://docs.gunicorn.org/en/stable/settings.html
 """
 
+DEBUG = False
 
 bind            = os.getenv('GUNICORN_BIND', '0.0.0.0')
-loglevel        = os.getenv('GUNICORN_LOGLEVEL', 'info')
-preload_app     = os.getenv('GUNICORN_PRELOAD_APP', True)
-reload          = os.getenv('GUNICORN_RELOAD', False)
+loglevel        = 'debug' if DEBUG else 'info'
+preload_app     = False if DEBUG else True
+reload          = True if DEBUG else False
 workers         = os.getenv('GUNICORN_WORKERS', 1)
-worker_class    = os.getenv('GUNICORN_WORKER_CLASS', 'uvicorn.workers.UvicornWorker')
+worker_class    = os.getenv('GUNICORN_WORKER_CLASS', 'workers.RestartableUvicornWorker')
