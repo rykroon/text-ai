@@ -24,13 +24,25 @@ async def telnyx_webhook(request) -> Response:
             return await _message_received(request, payload)
 
         case 'message', 'sent':
-            ...
+            return await _message_sent(request, payload)
 
         case 'message', 'finalized':
-            ...
+            return await _message_finalized(request, payload)
 
     request.app.state.logger.warning(event_type)
     return Response('OK')
+
+
+async def _message_sent(request, payload) -> Response:
+    # The message was sent by Telnyx.
+    request.app.state.logger.warning(payload)
+    return Response("OK")
+
+
+async def _message_finalized(request, payload) -> Response:
+    # The message delivery was confirmed.
+    request.app.state.logger.warning(payload)
+    return Response("OK")
 
 
 async def _message_received(request, payload) -> Response:
