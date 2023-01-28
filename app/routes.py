@@ -35,15 +35,17 @@ class TelnyxWebhook(HTTPEndpoint):
 
     async def _message_sent(self, request, payload) -> Response:
         # The message was sent by Telnyx.
-        request.app.state.logger.warning(payload)
+        request.app.state.logger.debug("Message sent.")
         return Response("OK")
 
     async def _message_finalized(self, request, payload) -> Response:
         # The message delivery was confirmed.
-        request.app.state.logger.warning(payload)
+        request.app.state.logger.debug("Message delivered.")
         return Response("OK")
 
     async def _message_received(self, request, payload) -> Response:
+        request.app.state.logger.debug('Message received.')
+
         from_ = payload['from']['phone_number']
         to = payload['to'][0]['phone_number']
         text = payload['text']
@@ -53,6 +55,10 @@ class TelnyxWebhook(HTTPEndpoint):
         # check to do proper rate limiting depending on the status of the sender.
         # check to make sure if the number should do text completion or image creation.
         # check to make sure the text does not contain anything inapropriate
+
+        # check white list to see if the sender is allowed to use the service.
+        if from_ not in request.app.state.white_list:
+            return Response('OK')
 
         task = BackgroundTask(
             _create_completion_and_send_sms,
