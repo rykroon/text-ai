@@ -1,4 +1,6 @@
 import os
+from starlette.config import Config
+
 
 """
     The default values are for production use.
@@ -6,12 +8,13 @@ import os
     - See the following link for additional settings
     https://docs.gunicorn.org/en/stable/settings.html
 """
+_config = Config()
+DEBUG = _config.get('DEBUG', cast=bool, default=False)
 
-DEBUG = True
 
-bind            = os.getenv('GUNICORN_BIND', '0.0.0.0')
-loglevel        = 'debug' if DEBUG else 'info'
-preload_app     = False if DEBUG else True
-reload          = True if DEBUG else False
-workers         = os.getenv('GUNICORN_WORKERS', 1)
-worker_class    = os.getenv('GUNICORN_WORKER_CLASS', 'workers.RestartableUvicornWorker')
+bind            = _config.get('GUNICORN_BIND', default='0.0.0.0')
+loglevel        = _config.get('GUNICORN_LOGLEVEL', default='debug' if DEBUG else 'info')
+preload_app     = _config.get('GUNICORN_PRELOAD_APP', cast=bool, default=not DEBUG)
+reload          = _config.get('GUNICORN_RELOAD', cast=bool, default=DEBUG)
+workers         = _config.get('GUNICORN_WORKERS', cast=int, default=1 if DEBUG else os.cpu_count() * 2 + 1)
+worker_class    = _config.get('GUNICORN_WORKER_CLASS', default='workers.RestartableUvicornWorker')
