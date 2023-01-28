@@ -15,6 +15,10 @@ async def root(request):
 class TelnyxWebhook(HTTPEndpoint):
 
     async def post(self, request) -> Response:
+        if not await self._verify_request(request):
+            request.app.state.logger.debug("Forbidden Request")
+            return Response(status_code=403)
+
         request_json = await request.json()
         data = request_json['data']
         event_type = data['event_type']
@@ -32,6 +36,21 @@ class TelnyxWebhook(HTTPEndpoint):
 
         request.app.state.logger.warning(f"{event_type=}")
         return Response('OK')
+
+    async def _verify_request(self, request) -> bool:
+        if 'telnyx-signature-ed25519' not in request.headers:
+            return False
+        
+        if 'telnyx-timestamp' not in request.headers:
+            return False
+        
+        signature = request.headers['telnyx-signature-ed25519']
+        timestamp = request.headers['telnyx-timestamp']
+        # currently only checking for the existence of these headers
+        # will need to learn how telnyx's webhook verification works.
+        ...
+
+        return True
 
     async def _message_sent(self, request, payload) -> Response:
         # The message was sent by Telnyx.
