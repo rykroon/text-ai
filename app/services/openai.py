@@ -33,7 +33,8 @@ async def create_completion(model: Gpt3Model, prompt: str, max_tokens: int = 16)
             'model': model,
             'prompt': prompt,
             'max_tokens': max_tokens
-        }
+        },
+        timeout=10
     )
     resp.raise_for_status()
     return resp.json()
