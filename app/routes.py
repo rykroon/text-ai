@@ -8,6 +8,7 @@ from services.telnyx import send_sms
 
 
 async def root(request):
+    request.app.state.logger.debug('Debug is turned on.')
     return Response('OK')
 
 
