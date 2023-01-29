@@ -4,7 +4,7 @@ from starlette.responses import Response
 from starlette.routing import Route
 
 from services.openai import create_completion, create_image, ImageSize, Gpt3Model
-from services.telnyx import send_sms
+from services.telnyx import send_sms, verify_webhook
 
 
 async def root(request):
@@ -43,14 +43,11 @@ class TelnyxWebhook(HTTPEndpoint):
         
         if 'telnyx-timestamp' not in request.headers:
             return False
-        
+
         signature = request.headers['telnyx-signature-ed25519']
         timestamp = request.headers['telnyx-timestamp']
-        # currently only checking for the existence of these headers
-        # will need to learn how telnyx's webhook verification works.
-        ...
-
-        return True
+        body = await request.body()
+        return verify_webhook(body, timestamp, signature, tolerance=60*5)
 
     async def _message_sent(self, request, payload) -> Response:
         # The message was sent by Telnyx.
