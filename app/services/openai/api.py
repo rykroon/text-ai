@@ -1,6 +1,11 @@
-from enum import StrEnum
 import os
 import httpx
+
+from .enums import Gpt3Model, ImageSize
+
+
+class OpenAiException(Exception):
+    ...
 
 
 API_KEY = os.environ['OPENAI_API_KEY']
@@ -13,19 +18,6 @@ client = httpx.AsyncClient(
 )
 
 
-class Gpt3Model(StrEnum):
-    DAVINCI = 'text-davinci-003'
-    CURIE = 'text-curie-001'
-    BABBAGE = 'text-babbage-001'
-    ADA = 'text-ada-001'
-
-
-class ImageSize(StrEnum):
-    SMALL = '256x256'
-    MEDIUM = '512x512'
-    LARGE = '1024x1024' 
-
-
 async def create_completion(model: Gpt3Model, prompt: str, max_tokens: int = 16) -> dict:
     resp = await client.post(
         url="/v1/completions",
@@ -36,7 +28,13 @@ async def create_completion(model: Gpt3Model, prompt: str, max_tokens: int = 16)
         },
         timeout=10
     )
-    resp.raise_for_status()
+
+    if resp.is_server_error:
+        resp.raise_for_status()
+    
+    if resp.is_client_error:
+        raise OpenAiException
+
     return resp.json()
 
 
@@ -48,5 +46,11 @@ async def create_image(prompt: str, size: ImageSize):
             'size': size
         }
     )
-    resp.raise_for_status()
+
+    if resp.is_server_error:
+        resp.raise_for_status()
+
+    if resp.is_client_error:
+        raise OpenAiException
+
     return resp.json()
