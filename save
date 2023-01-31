@@ -1,0 +1,3 @@
+#!/bin/sh
+docker image save --output sms-2-openai.tar sms-2-openai-img
+scp sms-2-openai.tar root@$REMOTE_ADDRESS:/usr/src/app
