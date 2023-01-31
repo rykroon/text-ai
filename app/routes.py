@@ -1,13 +1,14 @@
+import time
+
 from starlette.background import BackgroundTask
 from starlette.endpoints import HTTPEndpoint
 from starlette.responses import Response
-from starlette.routing import Route
 
-from services.openai import create_completion, create_image, ImageSize, Gpt3Model
-from services.telnyx import send_sms, verify_webhook
+from services.telnyx import verify_signature
+from tasks import create_completion_and_send_message, create_image_and_send_message
 
 
-async def root(request):
+async def homepage(request):
     request.app.state.logger.debug('Debug is turned on.')
     return Response('OK')
 
@@ -15,10 +16,9 @@ async def root(request):
 class TelnyxWebhook(HTTPEndpoint):
 
     async def post(self, request) -> Response:
-        if not await self._verify_request(request):
-            request.app.state.logger.debug("Forbidden Request")
-            return Response(status_code=403)
-
+        if not await self._verify_webhook(request):
+            return Response(status_code=401)
+    
         request_json = await request.json()
         data = request_json['data']
         event_type = data['event_type']
@@ -36,18 +36,26 @@ class TelnyxWebhook(HTTPEndpoint):
 
         request.app.state.logger.warning(f"{event_type=}")
         return Response('OK')
-
-    async def _verify_request(self, request) -> bool:
+    
+    async def _verify_webhook(self, request):
         if 'telnyx-signature-ed25519' not in request.headers:
             return False
-        
+
         if 'telnyx-timestamp' not in request.headers:
             return False
 
-        signature = request.headers['telnyx-signature-ed25519']
-        timestamp = request.headers['telnyx-timestamp']
-        body = await request.body()
-        return verify_webhook(body, timestamp, signature, tolerance=60*5)
+        signature = request.headers['telnyx-signature-ed25519'].encode()
+        timestamp = request.headers['telnyx-timestamp'].encode()
+        content = await request.body()
+
+        if not verify_signature(signature, timestamp, content):
+            return False
+
+        tolerance = 60*5 # Five minutes.
+        if int(timestamp) < time.time() - tolerance:
+            return False
+        
+        return True
 
     async def _message_sent(self, request, payload) -> Response:
         # The message was sent by Telnyx.
@@ -77,37 +85,10 @@ class TelnyxWebhook(HTTPEndpoint):
             return Response('OK')
 
         task = BackgroundTask(
-            _create_completion_and_send_sms,
+            create_completion_and_send_message,
             prompt=text,
             from_=to,
             to=from_
         )
 
         return Response('OK', background=task)
-
-
-routes = [
-    Route('/', root, methods=['GET']),
-    Route('/telnyx', TelnyxWebhook, methods=['POST'])
-]
-
-
-# ~~~ Background Tasks ~~~
-
-async def _create_image_and_send_sms(prompt: str, from_: str, to: str):
-    result = await create_image(
-        prompt=prompt,
-        size=ImageSize.SMALL
-    )
-    url = result['data'][0]['url']
-    await send_sms(from_=from_, to=to, text="", media_urls=[url])
-
-
-async def _create_completion_and_send_sms(prompt: str, from_: str, to: str):
-    result = await create_completion(
-        model=Gpt3Model.DAVINCI,
-        prompt=prompt,
-        max_tokens=64
-    )
-    text = result['choices'][0]['text']
-    await send_sms(from_=from_, to=to, text=text)
