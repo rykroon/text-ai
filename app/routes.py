@@ -8,11 +8,6 @@ from services.telnyx import verify_signature
 from tasks import create_completion_and_send_message, create_image_and_send_message
 
 
-async def homepage(request):
-    request.app.state.logger.debug('Debug is turned on.')
-    return Response('OK')
-
-
 class TelnyxWebhook(HTTPEndpoint):
 
     async def post(self, request) -> Response:
