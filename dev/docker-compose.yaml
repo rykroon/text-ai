@@ -3,8 +3,8 @@ services:
   app:
     image: sms-2-openai-img
     build:
-      context: ../
-      dockerfile: ./dev/Dockerfile
+      context: ../app
+      dockerfile: ../dev/Dockerfile
     container_name: sms-2-openai-app
     env_file: .env
     ports:

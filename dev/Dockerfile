@@ -1,7 +1,7 @@
 FROM python:3.11-slim-bullseye
 
 WORKDIR /usr/src/app
-COPY /app .
+COPY . .
 
 RUN apt-get update && \
     apt-get upgrade -y && \
