@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from httpx import Response
 
+
 @dataclass
 class TelnyxException(Exception):
     code: str

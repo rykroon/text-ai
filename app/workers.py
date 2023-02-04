@@ -40,4 +40,3 @@ class RestartableUvicornWorker(UvicornWorker):
         if self.cfg.reload:
             self._reloader_thread.start()
         super().run()
-        

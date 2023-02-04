@@ -16,7 +16,7 @@ class TelnyxWebhook(HTTPEndpoint):
     async def post(self, request) -> Response:
         if not await self._verify_webhook(request):
             return Response(status_code=401)
-    
+
         request_json = await request.json()
         data = request_json['data']
         event_type = data['event_type']
@@ -34,7 +34,7 @@ class TelnyxWebhook(HTTPEndpoint):
 
         request.app.state.logger.warning(f"{event_type=}")
         return Response('OK')
-    
+
     async def _verify_webhook(self, request) -> bool:
         if 'telnyx-signature-ed25519' not in request.headers:
             return False
@@ -48,7 +48,7 @@ class TelnyxWebhook(HTTPEndpoint):
 
         if not verify_signature(signature, timestamp, content, tolerance=60*5):
             return False
-        
+
         return True
 
     async def _message_sent(self, request, payload) -> Response:

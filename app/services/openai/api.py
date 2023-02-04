@@ -28,7 +28,7 @@ async def create_completion(model: Gpt3Model, prompt: str, max_tokens: int = 16)
 
     if resp.is_server_error:
         resp.raise_for_status()
-    
+
     if resp.is_client_error:
         raise OpenAiException.from_resp(resp)
 

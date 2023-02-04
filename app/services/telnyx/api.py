@@ -31,7 +31,7 @@ async def send_message(from_: str, to: str, text: str, media_urls: list[str] | N
 
     if resp.is_server_error:
         resp.raise_for_status()
-    
+
     if resp.is_client_error:
         raise TelnyxException.from_resp(resp)
 
