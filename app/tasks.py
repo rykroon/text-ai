@@ -15,7 +15,7 @@ async def create_image_and_send_message(prompt: str, from_: str, to: str):
 
 async def create_completion_and_send_message(prompt: str, from_: str, to: str):
     result = await create_completion(
-        model=Gpt3Model.DAVINCI,
+        model=Gpt3Model.CURIE,
         prompt=prompt,
         max_tokens=64
     )
