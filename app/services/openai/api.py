@@ -2,10 +2,7 @@ import os
 import httpx
 
 from .enums import Gpt3Model, ImageSize
-
-
-class OpenAiException(Exception):
-    ...
+from .exceptions import OpenAiException
 
 
 API_KEY = os.environ['OPENAI_API_KEY']
@@ -33,7 +30,7 @@ async def create_completion(model: Gpt3Model, prompt: str, max_tokens: int = 16)
         resp.raise_for_status()
     
     if resp.is_client_error:
-        raise OpenAiException
+        raise OpenAiException.from_resp(resp)
 
     return resp.json()
 
@@ -51,6 +48,6 @@ async def create_image(prompt: str, size: ImageSize):
         resp.raise_for_status()
 
     if resp.is_client_error:
-        raise OpenAiException
+        raise OpenAiException.from_resp(resp)
 
     return resp.json()
