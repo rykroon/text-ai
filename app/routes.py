@@ -1,5 +1,3 @@
-import time
-
 from starlette.background import BackgroundTask
 from starlette.endpoints import HTTPEndpoint
 from starlette.responses import Response
@@ -37,7 +35,7 @@ class TelnyxWebhook(HTTPEndpoint):
         request.app.state.logger.warning(f"{event_type=}")
         return Response('OK')
     
-    async def _verify_webhook(self, request):
+    async def _verify_webhook(self, request) -> bool:
         if 'telnyx-signature-ed25519' not in request.headers:
             return False
 
@@ -48,11 +46,7 @@ class TelnyxWebhook(HTTPEndpoint):
         timestamp = request.headers['telnyx-timestamp'].encode()
         content = await request.body()
 
-        if not verify_signature(signature, timestamp, content):
-            return False
-
-        tolerance = 60*5 # Five minutes.
-        if int(timestamp) < time.time() - tolerance:
+        if not verify_signature(signature, timestamp, content, tolerance=60*5):
             return False
         
         return True
