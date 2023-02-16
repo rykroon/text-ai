@@ -1,21 +1,27 @@
-from starlette.background import BackgroundTask
-from starlette.endpoints import HTTPEndpoint
-from starlette.responses import Response
+from sanic import Blueprint
+from sanic.exceptions import Unauthorized
+from sanic.log import logger
+from sanic.response import text
+from sanic.views import HTTPMethodView
 
 from services.telnyx import verify_signature
 from tasks import create_completion_and_send_message, create_image_and_send_message
 
 
+bp = Blueprint("my_blueprint")
+
+
+@bp.get('/')
 async def homepage(request):
-    request.app.state.logger.debug('Debug is turned on.')
-    return Response('OK')
+    logger.debug('Debug is turned on.')
+    return text("OK")
 
 
-class TelnyxWebhook(HTTPEndpoint):
+class TelnyxWebhook(HTTPMethodView):
 
-    async def post(self, request) -> Response:
+    async def post(self, request):
         if not await self._verify_webhook(request):
-            return Response(status_code=401)
+            raise Unauthorized
 
         request_json = await request.json()
         data = request_json['data']
@@ -33,7 +39,7 @@ class TelnyxWebhook(HTTPEndpoint):
                 return await self._message_finalized(request, payload)
 
         request.app.state.logger.warning(f"{event_type=}")
-        return Response('OK')
+        return text('OK')
 
     async def _verify_webhook(self, request) -> bool:
         if 'telnyx-signature-ed25519' not in request.headers:
@@ -51,18 +57,18 @@ class TelnyxWebhook(HTTPEndpoint):
 
         return True
 
-    async def _message_sent(self, request, payload) -> Response:
+    async def _message_sent(self, request, payload):
         # The message was sent by Telnyx.
-        request.app.state.logger.debug("Message sent.")
-        return Response("OK")
+        logger.debug("Message sent.")
+        return text("OK")
 
-    async def _message_finalized(self, request, payload) -> Response:
+    async def _message_finalized(self, request, payload):
         # The message delivery was confirmed.
-        request.app.state.logger.debug("Message delivered.")
-        return Response("OK")
+        logger.debug("Message delivered.")
+        return text("OK")
 
-    async def _message_received(self, request, payload) -> Response:
-        request.app.state.logger.debug('Message received.')
+    async def _message_received(self, request, payload):
+        logger.debug('Message received.')
 
         from_ = payload['from']['phone_number']
         to = payload['to'][0]['phone_number']
@@ -75,14 +81,16 @@ class TelnyxWebhook(HTTPEndpoint):
         # check to make sure the text does not contain anything inapropriate
 
         # check white list to see if the sender is allowed to use the service.
-        if from_ not in request.app.state.white_list:
-            return Response('OK')
+        if from_ not in request.app.ctx.white_list:
+            return text('OK')
 
-        task = BackgroundTask(
-            create_completion_and_send_message,
+        await create_completion_and_send_message(
             prompt=text,
             from_=to,
             to=from_
         )
 
-        return Response('OK', background=task)
+        return text('OK')
+
+
+bp.add_route(TelnyxWebhook.as_view(), '/telnyx')

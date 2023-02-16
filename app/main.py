@@ -1,25 +1,17 @@
-import logging
-from starlette.applications import Starlette
-from starlette.config import Config
-from starlette.datastructures import CommaSeparatedStrings
-from starlette.routing import Route
+from sanic import Sanic
+from sanic.config import Config
 
-from routes import homepage, TelnyxWebhook
+from routes import bp
 
 
 config = Config()
 
 
-routes = [
-    Route('/', homepage, methods=['GET']),
-    Route('/telnyx', TelnyxWebhook, methods=['POST'])
-]
+app = Sanic(__name__)
+app.blueprint(bp)
+
+app.ctx.white_list = config.get('WHITE_LIST', '').split(',')
 
 
-app = Starlette(
-    routes=routes
-)
-
-
-app.state.logger = logging.getLogger('gunicorn.error')
-app.state.white_list = config.get('WHITE_LIST', cast=CommaSeparatedStrings)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', debug=True, auto_reload=True)

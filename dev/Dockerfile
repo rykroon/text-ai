@@ -10,5 +10,6 @@ RUN apt-get update && \
     pip install --no-cache-dir -r requirements.txt
 
 EXPOSE 8000
-CMD ["gunicorn", "--config", "gunicorn.conf.py", "main:app"]
+# CMD ["gunicorn", "--config", "gunicorn.conf.py", "main:app"]
+CMD ["python", "main.py"]
 
