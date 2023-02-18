@@ -1,16 +1,23 @@
+import os
+
 from sanic import Sanic
-from sanic.config import Config
+from sanic.log import logger
+from sanic.response import text
 
-from routes import bp
-
-
-config = Config()
+from views import bp
 
 
 app = Sanic(__name__)
+
 app.blueprint(bp)
 
-app.ctx.white_list = config.get('WHITE_LIST', '').split(',')
+app.ctx.white_list = os.getenv('WHITE_LIST', '').split(',')
+
+
+@app.get('/')
+async def homepage(request):
+    logger.debug('Debug is turned on.')
+    return text("OK")
 
 
 if __name__ == '__main__':
