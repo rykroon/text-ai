@@ -2,8 +2,16 @@ from dataclasses import dataclass
 from httpx import Response
 
 
-@dataclass
 class TelnyxException(Exception):
+    ...
+
+
+class InvalidTelnyxSignature(TelnyxException):
+    ...
+
+
+@dataclass
+class TelnyxApiException(TelnyxException):
     code: str
     title: str
     detail: str

@@ -1,7 +1,7 @@
 import os
 import httpx
 
-from .exceptions import TelnyxException
+from .exceptions import TelnyxApiException
 
 
 TELNYX_API_KEY = os.environ['TELNYX_API_KEY']
@@ -33,6 +33,6 @@ async def send_message(from_: str, to: str, text: str, media_urls: list[str] | N
         resp.raise_for_status()
 
     if resp.is_client_error:
-        raise TelnyxException.from_resp(resp)
+        raise TelnyxApiException.from_resp(resp)
 
     return resp.json()
