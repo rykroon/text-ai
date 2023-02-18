@@ -51,3 +51,20 @@ async def create_image(prompt: str, size: ImageSize):
         raise OpenAiException.from_resp(resp)
 
     return resp.json()
+
+
+async def moderations(input: str):
+    resp = await client.post(
+        url="/v1/moderations",
+        json={
+            'input': input
+        }
+    )
+
+    if resp.is_server_error:
+        resp.raise_for_status()
+
+    if resp.is_client_error:
+        raise OpenAiException.from_resp(resp)
+
+    return resp.json()
