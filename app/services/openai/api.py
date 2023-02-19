@@ -15,13 +15,19 @@ client = httpx.AsyncClient(
 )
 
 
-async def create_completion(model: Gpt3Model, prompt: str, max_tokens: int = 16) -> dict:
+async def create_completion(
+    model: Gpt3Model,
+    prompt: str,
+    max_tokens: int = 16,
+    temperature: float = 1.0
+) -> dict:
     resp = await client.post(
         url="/v1/completions",
         json={
             'model': model,
             'prompt': prompt,
-            'max_tokens': max_tokens
+            'max_tokens': max_tokens,
+            'temperature': temperature
         },
         timeout=10
     )

@@ -8,6 +8,11 @@ class Gpt3Model(StrEnum):
     ADA = 'text-ada-001'
 
 
+class CodeGpt3Model(StrEnum):
+    DAVINCI = 'code-davinci-002'
+    CUSHMAN = 'code-cushman-001'
+
+
 class ImageSize(StrEnum):
     SMALL = '256x256'
     MEDIUM = '512x512'
