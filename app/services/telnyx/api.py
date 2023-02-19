@@ -14,11 +14,18 @@ client = httpx.AsyncClient(
 )
 
 
-async def send_message(from_: str, to: str, text: str, media_urls: list[str] | None = None):
+async def send_message(
+    from_: str,
+    to: str,
+    text: str,
+    media_urls: list[str] | None = None,
+    webhook_url: str | None = None
+):
     data = {
         'from': from_,
         'to': to,
-        'text': text
+        'text': text,
+        'webhook_url': webhook_url
     }
 
     if media_urls is not None:
