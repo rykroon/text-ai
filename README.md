@@ -9,5 +9,5 @@ Instructions for building and saving the image and sending it to a remote host t
 docker build -f dev/Dockerfile -t textai:xx.yy.zz app
 docker image save --output textai.tar textai:xx.yy.zz
 scp textai.tar root@$REMOTE_ADDRESS:/usr/src/app
-docker image load -t textai.tar
+docker image load -i textai.tar
 ```
