@@ -8,7 +8,8 @@ DBNAME = os.getenv('MONGODB_DBNAME', USERNAME)
 HOST = os.environ['MONGODB_HOST']
 
 client = AsyncIOMotorClient(
-    host=f"mongodb+srv://{USERNAME}:{PASSWORD}@{HOST}"
+    host=f"mongodb+srv://{USERNAME}:{PASSWORD}@{HOST}",
+    uuidRepresentation='standard'
 )
 
 db = client[DBNAME]
