@@ -6,7 +6,7 @@ from sanic.views import HTTPMethodView
 
 from services.telnyx import verify_signature, InvalidTelnyxSignature
 from tasks import create_completion_and_send_message, create_image_and_send_message
-from db import db
+from models import users, numbers
 
 
 bp = Blueprint("telnyx")
@@ -74,23 +74,17 @@ class TelnyxWebhook(HTTPMethodView):
         # future checks
         # check to do proper rate limiting depending on the status of the sender.
         # check to make sure the text does not contain anything inapropriate
-        
-        user = await db['users'].find_one({
-            'phone_number': from_
-        })
 
+        user = await users.find_one(phone_number=from_)
         if user is None:
             logger.debug(f"Phone number '{from_}' does not have access.")
             return
 
-        access_number = await db['numbers'].find_one({
-            'phone_number': to
-        })
-
+        access_number = await numbers.find_one(phone_number=to)
         if access_number is None:
             return
 
-        match access_number['service']:
+        match access_number.service:
             case 'openai.chatgpt':
                 request.app.add_task(
                     create_completion_and_send_message(
