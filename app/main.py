@@ -11,8 +11,6 @@ app = Sanic(__name__)
 
 app.blueprint(bp)
 
-app.ctx.white_list = os.getenv('WHITE_LIST', '').split(',')
-
 
 @app.get('/')
 async def homepage(request):

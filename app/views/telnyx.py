@@ -6,6 +6,7 @@ from sanic.views import HTTPMethodView
 
 from services.telnyx import verify_signature, InvalidTelnyxSignature
 from tasks import create_completion_and_send_message, create_image_and_send_message
+from db import db
 
 
 bp = Blueprint("telnyx")
@@ -50,7 +51,7 @@ class TelnyxWebhook(HTTPMethodView):
                 await self._message_finalized(request)
             
             case _:
-                logger.warning(f"{event_type=}")
+                logger.warning(f"Unhandled event '{event_type}'.")
 
         return response.text('OK')
 
@@ -71,22 +72,42 @@ class TelnyxWebhook(HTTPMethodView):
         text = payload['text']
 
         # future checks
-        # check to make sure that sender is a customer.
         # check to do proper rate limiting depending on the status of the sender.
-        # check to make sure if the number should do text completion or image creation.
         # check to make sure the text does not contain anything inapropriate
+        
+        user = await db['users'].find_one({
+            'phone_number': from_
+        })
 
-        # check white list to see if the sender is allowed to use the service.
-        if from_ not in request.app.ctx.white_list:
+        if user is None:
+            logger.debug(f"Phone number '{from_}' does not have access.")
             return
 
-        request.app.add_task(
-            create_completion_and_send_message(
-                prompt=text,
-                from_=to,
-                to=from_
-            )
-        )
+        access_number = await db['numbers'].find_one({
+            'phone_number': to
+        })
+
+        if access_number is None:
+            return
+
+        match access_number['service']:
+            case 'openai.chatgpt':
+                request.app.add_task(
+                    create_completion_and_send_message(
+                        prompt=text,
+                        from_=to,
+                        to=from_
+                    )
+                )
+
+            case 'openai.dall-e':
+                request.app.add_task(
+                    create_image_and_send_message(
+                        prompt=text,
+                        from_=to,
+                        to=from_
+                    )
+                )
 
 
-bp.add_route(TelnyxWebhook.as_view(), '/telnyx')
+bp.add_route(TelnyxWebhook.as_view(), '/telnyx', name='TelnyxWebhook')
