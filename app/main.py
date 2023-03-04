@@ -19,5 +19,5 @@ async def homepage(request):
 
 
 if __name__ == '__main__':
-    debug = os.getenv('DEBUG', '').lower() == 'true'
+    debug = os.getenv('DEBUG', '').lower() in ('true', 't', 'yes', 'y', 'on')
     app.run(host='0.0.0.0', debug=debug, auto_reload=debug, fast=not debug)
