@@ -1,0 +1,14 @@
+version: '3'
+services:
+  app:
+    image: textai
+    build:
+      context: . #  relative to the location of the Compose file.
+      dockerfile: Dockerfile # relative to the context.
+    container_name: textai-dev
+    env_file: .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - "./src:/usr/src/local/host-src"
+    working_dir: "/usr/src/local/host-src"
