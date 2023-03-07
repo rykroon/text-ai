@@ -5,8 +5,9 @@ from sanic import response
 from sanic.views import HTTPMethodView
 
 from services.telnyx import verify_signature, InvalidTelnyxSignature
-from tasks import create_completion_and_send_message, create_image_and_send_message
-from models import users, numbers
+from tasks import create_text_completion_and_send_message, create_image_and_send_message, \
+    create_chat_completion_and_send_message
+from models import User, AccessNumber
 
 
 bp = Blueprint("telnyx")
@@ -75,33 +76,42 @@ class TelnyxWebhook(HTTPMethodView):
         # check to do proper rate limiting depending on the status of the sender.
         # check to make sure the text does not contain anything inapropriate
 
-        user = await users.find_one(phone_number=from_)
+        user = await User.find_one(phone_number=from_)
         if user is None:
             logger.debug(f"Phone number '{from_}' does not have access.")
             return
 
-        access_number = await numbers.find_one(phone_number=to)
+        access_number = await AccessNumber.find_one(phone_number=to)
         if access_number is None:
             return
 
         match access_number.service:
-            case 'openai.chatgpt':
-                request.app.add_task(
-                    create_completion_and_send_message(
-                        prompt=text,
-                        from_=to,
-                        to=from_
-                    )
+            case 'openai.chat-completion':
+                coroutine = create_chat_completion_and_send_message(
+                    user_uuid=user.uuid,
+                    message_content=text,
+                    from_=to,
+                    to=from_
                 )
 
-            case 'openai.dall-e':
-                request.app.add_task(
-                    create_image_and_send_message(
-                        prompt=text,
-                        from_=to,
-                        to=from_
-                    )
+            case 'openai.text-completion':
+                coroutine = create_text_completion_and_send_message(
+                    prompt=text,
+                    from_=to,
+                    to=from_
                 )
+
+            case 'openai.image-generation':
+                coroutine = create_image_and_send_message(
+                    prompt=text,
+                    from_=to,
+                    to=from_
+                )
+
+            case _:
+                return
+        
+        request.app.add_task(coroutine)
 
 
 bp.add_route(TelnyxWebhook.as_view(), '/telnyx', name='TelnyxWebhook')
