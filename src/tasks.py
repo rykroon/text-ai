@@ -22,7 +22,7 @@ async def create_text_completion_and_send_message(prompt: str, from_: str, to: s
     result = await create_text_completion(
         model=Gpt3Model.CURIE,
         prompt=prompt,
-        max_tokens=64
+        max_tokens=128
     )
     text = result['choices'][0]['text']
     await send_message(from_=from_, to=to, text=text)
