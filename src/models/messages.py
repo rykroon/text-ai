@@ -3,7 +3,7 @@ from typing import ClassVar, Literal
 import uuid
 
 from utils.db import db
-from utils.encryption import f
+from utils.crypt import encrypt_string, decrypt_bytes
 from .documents import AuditDocument
 
 
@@ -17,7 +17,7 @@ class OpenAiChatMessage(AuditDocument):
 
     @classmethod
     def new(cls, *, content, **kwargs):
-        encrypted_content = f.encrypt(content.encode())
+        encrypted_content = encrypt_string(content)
         return cls(
             encrypted_content=encrypted_content,
             **kwargs
@@ -25,8 +25,8 @@ class OpenAiChatMessage(AuditDocument):
 
     @property
     def content(self) -> str:
-        return f.decrypt(self.encrypted_content).decode()
+        return decrypt_bytes(self.encrypted_content)
     
     @content.setter
     def content(self, content: str):
-        self.encrypted_content = f.encrypt(content.encode())
+        self.encrypted_content = encrypt_string(content)
