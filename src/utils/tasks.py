@@ -1,10 +1,13 @@
 import asyncio
 import uuid
 
+from sanic.log import logger
+
 from models import OpenAiChatMessage
 from services.openai import create_text_completion, create_chat_completion,\
     create_image, Gpt3Model, Gpt35Model, ImageSize
 from services.telnyx import send_message
+from utils.encryption import f
 
 
 # ~~~ Background Tasks ~~~
@@ -34,8 +37,10 @@ async def create_chat_completion_and_send_message(
     from_: str,
     to: str
 ):
+    logger.debug('create_chat_completion_and_send_message')
+
     # Add new message.
-    user_message = OpenAiChatMessage(
+    user_message = OpenAiChatMessage.new(
         user_uuid=user_uuid,
         role='user',
         content=message_content
@@ -47,21 +52,22 @@ async def create_chat_completion_and_send_message(
         query={
             'user_uuid': user_uuid,
         },
-        projection={
-            '_id': 0,
-            'role': 1,
-            'content': 1
-        },
         limit=20
     )
 
-    messages = [m async for m in cursor]
+    messages = [
+        {'role': msg.role, 'content': msg.content}
+        async for msg in cursor
+    ]
+
+    logger.debug(f"{messages=}")
+    
     result = await create_chat_completion(
         model=Gpt35Model.TURBO,
         messages=messages
     )
 
-    assistant_message = OpenAiChatMessage(
+    assistant_message = OpenAiChatMessage.new(
         user_uuid=user_uuid,
         role=result['choices'][0]['message']['role'],
         content=result['choices'][0]['message']['content']
@@ -71,3 +77,5 @@ async def create_chat_completion_and_send_message(
         assistant_message.insert(),
         send_message(from_=from_, to=to, text=assistant_message.content)
     )
+
+    logger.debug('did we get here??')
