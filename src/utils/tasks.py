@@ -37,6 +37,7 @@ async def create_chat_completion_and_send_message(
     user_message = OpenAiChatMessage.new(
         user_uuid=user_uuid, role="user", content=message_content
     )
+
     await user_message.insert()
 
     # Query for previous messages.
@@ -50,7 +51,6 @@ async def create_chat_completion_and_send_message(
 
     messages = [{"role": msg.role, "content": msg.content} async for msg in cursor]
     messages.reverse()
-
     result = await create_chat_completion(model=Gpt35Model.TURBO, messages=messages)
 
     assistant_message = OpenAiChatMessage.new(
