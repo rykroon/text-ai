@@ -5,7 +5,7 @@ from sanic import response
 from sanic.views import HTTPMethodView
 
 from services.telnyx import verify_signature, InvalidTelnyxSignature
-from tasks import create_text_completion_and_send_message, create_image_and_send_message, \
+from utils.tasks import create_text_completion_and_send_message, create_image_and_send_message, \
     create_chat_completion_and_send_message
 from models import User, AccessNumber
 
