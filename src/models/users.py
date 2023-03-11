@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from db import db
-from .documents import Document
+from utils.db import db
+from .documents import AuditDocument
 
 
 @dataclass(kw_only=True)
-class User(Document):
+class User(AuditDocument):
     _collection: ClassVar = db['users']
 
     first_name: str
