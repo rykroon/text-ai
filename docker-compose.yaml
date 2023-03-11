@@ -12,3 +12,7 @@ services:
     volumes:
       - "./src:/usr/src/local/host-src"
     working_dir: "/usr/src/local/host-src"
+
+  redis:
+    image: redis:latest
+    container_name: textai-redis
