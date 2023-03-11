@@ -5,7 +5,6 @@ from models import OpenAiChatMessage
 from services.openai import create_text_completion, create_chat_completion,\
     create_image, Gpt3Model, Gpt35Model, ImageSize
 from services.telnyx import send_message
-from utils.encryption import f
 
 
 # ~~~ Background Tasks ~~~
@@ -48,13 +47,15 @@ async def create_chat_completion_and_send_message(
         query={
             'user_uuid': user_uuid,
         },
-        limit=20
+        limit=20,
+        sort=[('created_at', -1)]
     )
 
     messages = [
         {'role': msg.role, 'content': msg.content}
         async for msg in cursor
     ]
+    messages.reverse()
     
     result = await create_chat_completion(
         model=Gpt35Model.TURBO,
