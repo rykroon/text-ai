@@ -7,7 +7,7 @@ from .documents import AuditDocument
 
 @dataclass(kw_only=True)
 class User(AuditDocument):
-    _collection: ClassVar = db['users']
+    _collection: ClassVar = db["users"]
 
     first_name: str
     last_name: str

@@ -22,9 +22,5 @@ class TelnyxApiException(TelnyxException):
     @classmethod
     def from_resp(cls, resp: Response):
         result = resp.json()
-        error = result['errors'][0]
-        return cls(
-            code=error['code'],
-            title=error['title'],
-            detail=error['detail']
-        )
+        error = result["errors"][0]
+        return cls(code=error["code"], title=error["title"], detail=error["detail"])

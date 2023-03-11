@@ -7,48 +7,44 @@ from .exceptions import OpenAiException
 from .types import Message
 
 
-API_KEY = os.environ['OPENAI_API_KEY']
+API_KEY = os.environ["OPENAI_API_KEY"]
 
 
 client = httpx.AsyncClient(
     base_url="https://api.openai.com",
-    headers={'Authorization': f"Bearer {API_KEY}"},
-    http2=True
+    headers={"Authorization": f"Bearer {API_KEY}"},
+    http2=True,
 )
 
 
 async def list_models():
     """
-        https://platform.openai.com/docs/api-reference/models/list
+    https://platform.openai.com/docs/api-reference/models/list
     """
-    return await client.get('v1/models')
- 
+    return await client.get("v1/models")
+
 
 async def create_text_completion(
     model: Gpt3Model,
     prompt: str | None = None,
     max_tokens: int | None = None,
-    temperature: float | None = None
+    temperature: float | None = None,
 ) -> dict:
     """
-        Text Completion
-        https://platform.openai.com/docs/api-reference/completions/create
+    Text Completion
+    https://platform.openai.com/docs/api-reference/completions/create
     """
-    data = {'model': model}
+    data = {"model": model}
     if prompt is not None:
-        data['prompt'] = prompt
-    
-    if max_tokens is not None:
-        data['max_tokens'] = max_tokens
-    
-    if temperature is not None:
-        data['temperature'] = temperature
+        data["prompt"] = prompt
 
-    resp = await client.post(
-        url="/v1/completions",
-        json=data,
-        timeout=10
-    )
+    if max_tokens is not None:
+        data["max_tokens"] = max_tokens
+
+    if temperature is not None:
+        data["temperature"] = temperature
+
+    resp = await client.post(url="/v1/completions", json=data, timeout=10)
 
     if resp.is_server_error:
         resp.raise_for_status()
@@ -60,27 +56,20 @@ async def create_text_completion(
 
 
 async def create_chat_completion(
-    model: Literal['gpt-3.5-turbo', 'gpt-3.5-turbo-0301'],
+    model: Literal["gpt-3.5-turbo", "gpt-3.5-turbo-0301"],
     messages: list[Message],
-    temperature: float | None = None
+    temperature: float | None = None,
 ):
     """
-        Chat Completion (ChatGPT)
-        https://platform.openai.com/docs/api-reference/chat/create
+    Chat Completion (ChatGPT)
+    https://platform.openai.com/docs/api-reference/chat/create
     """
-    data = {
-        'model': model,
-        'messages': messages
-    }
+    data = {"model": model, "messages": messages}
 
     if temperature is not None:
-        data['temperature'] = temperature
+        data["temperature"] = temperature
 
-    resp = await client.post(
-        url='/v1/chat/completions',
-        json=data,
-        timeout=20
-    )
+    resp = await client.post(url="/v1/chat/completions", json=data, timeout=20)
 
     if resp.is_server_error:
         resp.raise_for_status()
@@ -92,25 +81,20 @@ async def create_chat_completion(
 
 
 async def create_image(
-    prompt: str,
-    n: int | None = None,
-    size: ImageSize | None = None
+    prompt: str, n: int | None = None, size: ImageSize | None = None
 ):
     """
-        Image Generation.
-        https://platform.openai.com/docs/api-reference/images/create
+    Image Generation.
+    https://platform.openai.com/docs/api-reference/images/create
     """
-    data = {'prompt': prompt}
+    data = {"prompt": prompt}
     if n is not None:
-        data['n'] = n
-    
-    if size is not None:
-        data['size'] = size
+        data["n"] = n
 
-    resp = await client.post(
-        url="/v1/images/generations",
-        json=data
-    )
+    if size is not None:
+        data["size"] = size
+
+    resp = await client.post(url="/v1/images/generations", json=data)
 
     if resp.is_server_error:
         resp.raise_for_status()
@@ -123,20 +107,17 @@ async def create_image(
 
 async def moderations(
     input: str,
-    model: Literal['text-moderation-stable', 'text-moderation-latest'] | None = None
+    model: Literal["text-moderation-stable", "text-moderation-latest"] | None = None,
 ):
     """
-        Moderations
-        https://platform.openai.com/docs/api-reference/moderations/create
+    Moderations
+    https://platform.openai.com/docs/api-reference/moderations/create
     """
-    data = {'input': input}
+    data = {"input": input}
     if model is not None:
-        data['model'] = model
+        data["model"] = model
 
-    resp = await client.post(
-        url="/v1/moderations",
-        json=data
-    )
+    resp = await client.post(url="/v1/moderations", json=data)
 
     if resp.is_server_error:
         resp.raise_for_status()

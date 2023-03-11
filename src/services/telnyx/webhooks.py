@@ -8,18 +8,13 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 from .exceptions import InvalidTelnyxSignature
 
 
-TELNYX_PUBLIC_KEY = os.environ['TELNYX_PUBLIC_KEY']
+TELNYX_PUBLIC_KEY = os.environ["TELNYX_PUBLIC_KEY"]
 
 
 def verify_signature(
-    signature: bytes,
-    timestamp: bytes,
-    content: bytes,
-    tolerance: int = 0
+    signature: bytes, timestamp: bytes, content: bytes, tolerance: int = 0
 ) -> bool:
-    public_key = Ed25519PublicKey.from_public_bytes(
-        b64decode(TELNYX_PUBLIC_KEY)
-    )
+    public_key = Ed25519PublicKey.from_public_bytes(b64decode(TELNYX_PUBLIC_KEY))
 
     message = timestamp + b"|" + content
     try:

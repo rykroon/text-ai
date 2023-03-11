@@ -15,10 +15,10 @@ class OpenAiException(Exception):
     @classmethod
     def from_resp(cls, resp: Response):
         result = resp.json()
-        error = result['error']
+        error = result["error"]
         return cls(
-            message=error['message'],
-            type=error['type'],
-            param=error['param'],
-            code=error['code']
+            message=error["message"],
+            type=error["type"],
+            param=error["param"],
+            code=error["code"],
         )

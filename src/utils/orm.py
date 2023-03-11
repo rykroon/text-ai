@@ -7,7 +7,6 @@ from motor.motor_asyncio import AsyncIOMotorCollection, AsyncIOMotorCursor
 
 
 class CursorWrapper:
-
     def __init__(self, class_, cursor):
         self.class_ = class_
         self.cursor = cursor
@@ -43,14 +42,9 @@ class Document:
         query: dict | None = None,
         skip: int = 0,
         limit: int = 0,
-        sort: list[tuple[str, int]] | None = None
+        sort: list[tuple[str, int]] | None = None,
     ) -> AsyncIOMotorCursor:
-        cursor = cls._collection.find(
-            filter=query,
-            skip=skip,
-            limit=limit,
-            sort=sort
-        )
+        cursor = cls._collection.find(filter=query, skip=skip, limit=limit, sort=sort)
         return CursorWrapper(cls, cursor)
 
     @classmethod
@@ -62,12 +56,11 @@ class Document:
 
     async def insert(self):
         return await self._collection.insert_one(asdict(self))
-    
+
     async def update(self):
         return await self._collection.update_one(
-            filter={'_id': self._id},
-            update={'$set': asdict(self)}
+            filter={"_id": self._id}, update={"$set": asdict(self)}
         )
 
     async def delete(self):
-        return await self._collection.delete_one({'_id': self._id})
+        return await self._collection.delete_one({"_id": self._id})
