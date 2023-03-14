@@ -7,7 +7,9 @@ from redis.asyncio import Redis
 client = Redis(host="textai-redis")
 
 
-async def _ratelimit_helper(key, duration, n, t) -> tuple[bool, float | None]:
+async def _ratelimit_helper(
+    key: str, duration: int, n: int, t: float
+) -> tuple[bool, float | None]:
     pipeline = client.pipeline()
     pipeline.zremrangebyscore(key, min=0, max=t - duration)
     pipeline.zcount(key, min=0, max=t)
@@ -20,7 +22,7 @@ async def _ratelimit_helper(key, duration, n, t) -> tuple[bool, float | None]:
     return True, None
 
 
-async def _add_timestamp(key, duration, t):
+async def _add_timestamp(key: str, duration: int, t: float):
     pipeline = client.pipeline()
     pipeline.zadd(key, {t: t})
     pipeline.expire(key, duration)
@@ -43,9 +45,7 @@ async def multi_ratelimit(identifier: str, mapping: dict[int, int]):
     coroutines = []
     for duration, n in mapping.items():
         key = f"ratelimit:{identifier}:{duration}"
-        coroutines.append(
-            _ratelimit_helper(key, duration, n, t)
-        )
+        coroutines.append(_ratelimit_helper(key, duration, n, t))
 
     results = await asyncio.gather(*coroutines)
     if not all([success for success, _, in results]):
